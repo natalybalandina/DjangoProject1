@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block content %}
 <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
@@ -67,12 +66,10 @@
         <div class="col-12">
             <div class="card mb-4 box-shadow">
                 <div class="card-body">
-                    <h2>Контакты</h2>
+                    <h2>Контактные данные</h2>
                     <ul>
                         {% for contact in contacts %}
                         <li>{{ contact.name }} - {{ contact.email }} - {{ contact.phone }}</li>
-                        {% empty %}
-                        <li>Нет доступных контактов.</li>
                         {% endfor %}
                     </ul>
 
@@ -80,8 +77,6 @@
                     <ul>
                         {% for product in latest_products %}
                         <li>{{ product.name }} - {{ product.created_at }}</li>
-                        {% empty %}
-                        <li>Нет доступных продуктов.</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -90,8 +85,4 @@
     </div>
 </div>
 {% endblock %}
-
-<!-- Подключите статические файлы со скриптами Bootstrap -->
-{% block scripts %}
-<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-{% endblock %}
+</html>
