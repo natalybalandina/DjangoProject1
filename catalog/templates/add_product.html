@@ -1,0 +1,23 @@
+{{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Добавление продукта</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">Добавить</button>
+    </form>
+</div>
+{% endblock %}
