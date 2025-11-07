@@ -47,19 +47,61 @@ DjangoProjects/
 │   ├── settings.py        # Основные настройки проекта
 │   ├── urls.py            # Основные маршруты проекта
 │   ├── wsgi.py            # Точка входа для WSGI
+|   ├── asgi.py            # Настройка для серверного интерфейса ASGI
 │
 ├── catalog/               # Приложение интернет-магазина
 │   ├── templates/         # HTML-шаблоны
 │   │   ├── home.html      # Главная страница
 │   │   ├── contacts.html  # Страница контактов
+│   │   ├── base.html      # Базовый шаблон
+│   │   ├── add_product.html  
+│   │   ├── footer.html    
+│   │   ├── header.html    
+│   │   ├── product_card.html  
+│   │   ├── product_info.html
+│   │   ├── category.html
+│   │   ├── category_not_database.html
+│   │   ├── delete_product.html
+│   │   ├── edit_product.html
+│   ├── templatags/        
+│   │   ├── custom_tags.py     # Файл с пользовательскими тегами
+│   ├── migrations.py      # Директория приложения файлов миграции СБД
+│   ├── forms.py
 │   ├── views.py           # Контроллеры (обработка страниц и формы)
 │   ├── urls.py            # Маршруты приложения
-│
+│   ├── photo/             # Папка хранения изображений продуктов
+│   ├── management/        # Пакет приложения кастомной команды
+│   ├── admin.py           # Настройка административной панели Django для удобного управления моделями Product, Category и Contact
+│   ├── models.py          # Определяет модели для категорий и продуктов, а также для контактной информации в приложении Django
+│   ├───__init__.py
+│       └───commands/
+│           ├───__init__.py
+│           └───add_products.py
+│           └───clear_cache.py
+├── blogs/               # Приложение БЛОГ
+│   ├── templates/         # HTML-шаблоны
+│   │   ├── blogs/
+│   │   	├── blog_card.html      
+│   │   	├── blog_create.html  
+│   │   	├── base.html      # Базовый шаблон
+│   │   	├── blog_delete.html  
+│   │   	├── footer.html    
+│   │   	├── header.html    
+│   │   	├── blog_detail.html  
+│   │   	├── blog_list.html
+│   ├── migrations         # Директория приложения файлов миграции СБД
+│   ├── forms.py
+│   ├── views.py           # Контроллеры (обработка страниц и формы)
+│   ├── urls.py            # Маршруты приложения
+│   ├── models.py
+|   ├── admin.py  
 ├── static/                # Статические файлы (CSS, JS, изображения)
 │   ├── css/bootstrap.min.css
 |   ├── js/bootstrap.min.css
+├── screenchots/           # Скриншоты выполнения Django shell
 │
 ├── manage.py              # Основной файл управления Django-проектом
+├── .env                   # Файл для хранения переменных среды и конфиденциальной информации
 ├── requirements.txt       # Список зависимостей
 ├── README.md              # Документация проекта
 ```
