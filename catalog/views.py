@@ -1,142 +1,118 @@
-from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.core.paginator import Paginator
-from catalog.forms import ProductForm
-from catalog.models import Product, Contact, Category
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
+from django.shortcuts import redirect, render, HttpResponse
 from django.core.exceptions import PermissionDenied
 
+from catalog.models import Product, Contact, Category
+from catalog.forms import ProductForm
 
-def home(request):
-    search_query = request.GET.get('q', '')
-    if search_query:
-        products_list = Product.objects.filter(
-            Q(name__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(category__name__icontains=search_query)  # Добавляем поиск по категории
-        )
-    else:
-        products_list = Product.objects.all()
+class HomeView(ListView):
+    model = Product
+    template_name = 'home.html'
+    context_object_name = 'products_list'
+    paginate_by = 6
 
-    categories = Category.objects.all()  # Получаем все категории
+    def get_queryset(self):
+        search_query = self.request.GET.get('q', '')
+        queryset = Product.objects.all()  # Получаем все продукты
 
-    context = {
-        'products_list': products_list,
-        'search_query': search_query,
-        'categories': categories,  # Передаём категории в контекст
-    }
-    print(f"Query: {search_query}")
-    print(f"Products: {products_list}")
-    return render(request, 'home.html', context)
+        if search_query:
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(category__name__icontains=search_query)
+            )
 
+        return queryset.order_by('id')
 
-def product_info(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    context = {"product": product}
-    return render(request, "product_info.html", context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('q', '')
+        context['categories'] = Category.objects.all()
+        return context
 
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = 'product_info.html'
+    context_object_name = 'product'
 
-def contacts(request):
-    contacts_data = Contact.objects.all()
-    latest_products = Product.objects.all().order_by("-created_at")[:5]
+class ContactsView(TemplateView):
+    template_name = 'contacts.html'
 
-    if request.method == 'POST':
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contacts'] = Contact.objects.all()
+        context['latest_products'] = Product.objects.all().order_by("-created_at")[:5]
+        return context
+
+    def post(self, request, *args, **kwargs):
         name = request.POST.get('name')
         telephone = request.POST.get('phone')
         message = request.POST.get('message')
-
         return HttpResponse(f"Спасибо {name} за отзыв! Ваше сообщение получено")
 
-    return render(
-        request,
-        "contacts.html",
-        {"contacts": contacts_data, "latest_products": latest_products},
-    )
+class ProductCreateView(SuccessMessageMixin, CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'add_product.html'
+    success_url = reverse_lazy('catalog:home')
+    success_message = "Продукт успешно добавлен!"
 
+    def form_valid(self, form):
+        new_category_name = form.cleaned_data.get('new_category_name', '').strip()
+        category = form.cleaned_data.get('category')
 
-def add_product(request):
-    if request.method == "POST":
-        form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            new_category_name = form.cleaned_data.get('new_category_name', '').strip()
-            category = form.cleaned_data.get('category')
-
-            # Если выбрана существующая категория
-            if category:
-                product = form.save()
-                messages.success(request, "Продукт успешно добавлен!")
-                return redirect('catalog:home')
-
-            # Если указана новая категория
-            elif new_category_name:
-                category, created = Category.objects.get_or_create(name=new_category_name)
-                product = form.save(commit=False)
-                product.category = category
-                product.save()
-                messages.success(request, f"Создана новая категория '{category.name}' и продукт добавлен!")
-                return redirect('catalog:home')
-
-            # Если ни одна категория не указана
-            else:
-                messages.error(request, "Выберите существующую категорию или укажите новую")
+        if category:
+            return super().form_valid(form)
+        elif new_category_name:
+            category, created = Category.objects.get_or_create(name=new_category_name)
+            product = form.save(commit=False)
+            product.category = category
+            product.save()
+            self.success_message = f"Создана новая категория '{category.name}' и продукт добавлен!"
+            return redirect(self.success_url)
         else:
-            messages.error(request, "Пожалуйста, исправьте ошибки в форме")
-    else:
-        form = ProductForm()
+            form.add_error(None, "Выберите существующую категорию или укажите новую")
+            return self.form_invalid(form)
 
-    # Проверка генерации ID
-    print("\nПроверка ID полей:")
-    for field_name, field in form.fields.items():
-        print(f"{field_name}: {field.widget.attrs.get('id', 'auto')}")
+class ProductUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'edit_product.html'
+    success_url = reverse_lazy('catalog:home')
+    success_message = "Продукт успешно обновлен!"
 
-    return render(request, "add_product.html", {'form': form})
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
+    model = Product
+    template_name = 'delete_product.html'
+    success_url = reverse_lazy('catalog:home')
 
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied
+        return super().post(request, *args, **kwargs)
 
-@login_required
-def edit_product(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
-            form.save()
-            return redirect('catalog:home')
-    else:
-        form = ProductForm(instance=product)
-    return render(request, 'edit_product.html', {'form': form})
+class CategoryView(ListView):
+    model = Product
+    template_name = 'category.html'
+    paginate_by = 6
+    context_object_name = 'products'
 
-@require_POST
-def delete_product(request, pk):
-    product = get_object_or_404(Product, pk=pk)
+    def get_queryset(self):
+        category_id = self.kwargs.get('category_id')
+        self.category = Category.objects.get(id=category_id)
+        return Product.objects.filter(category=self.category).order_by('id')
 
-    # Дополнительная проверка прав (если нужно)
-    if not request.user.is_staff:
-        raise PermissionDenied
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        return context
 
-    if request.method == 'POST':
-        product.delete()
-        return redirect('catalog:home')
-
-    return render(request, 'delete_product.html', {'product': product})
-
-
-def category_view(request, category_id):
-    """Отображает список товаров по категории"""
-    try:
-        category = Category.objects.get(id=category_id)
-        product_list = Product.objects.filter(category=category).order_by('id')
-
-        # Пагинация
-        paginator = Paginator(product_list, 6)  # 6 продуктов на странице
-        page_number = request.GET.get('page')
-        products = paginator.get_page(page_number)
-
-        context = {
-            'category': category,
-            'products': products,
-        }
-        return render(request, 'category.html', context)
-    except Category.DoesNotExist:
-        return render(request, 'category_not_found.html', {'category_id': category_id})
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super().dispatch(request, *args, **kwargs)
+        except Category.DoesNotExist:
+            return render(request, 'categories_not_database.html', {'category_id': kwargs['category_id']})
