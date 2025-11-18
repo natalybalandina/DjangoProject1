@@ -1,0 +1,56 @@
+{% load custom_tags %}
+
+<div class="col-md-3 d-flex align-items-stretch">
+    <div class="card mb-4 box-shadow">
+        <div class="card-header text-center">
+            <h4 class="my-0 font-weight-normal">{{ product.name|truncatechars:40 }}</h4>
+        </div>
+        <div class="card-body d-flex flex-column align-items-center">
+            <div class="text-center mb-3">
+                <img src="{{ product.image|media_filter }}" alt="{{ product.name }}" class="img-fluid" style="max-width: 70%;">
+            </div>
+            <ul class="list-unstyled mt-3 mb-4 text-start flex-grow-1">
+                <li>{{ product.description|truncatewords:20 }}</li>
+            </ul>
+            <div class="mt-auto w-100">
+                <div class="d-grid gap-2 rounded">
+                    <a href="{% url 'catalog:product_info' product.pk %}"
+                       class="btn btn-sm btn-outline-primary rounded">Подробнее</a>
+                    <div class="btn-group gap-1 rounded">
+                        <a href="{% url 'catalog:edit_product' product.pk %}"
+                           class="btn btn-sm btn-outline-warning rounded">Изменить</a>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger rounded"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal{{ product.pk }}">
+                            Удалить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteModal{{ product.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить товар <strong>"{{product.name}}"</strong>?</p>
+                <p class="text-danger">Это действие нельзя отменить!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form method="post" action="{% url 'catalog:delete_product' product.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

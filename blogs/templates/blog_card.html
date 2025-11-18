@@ -1,0 +1,20 @@
+<div class="col-md-3 d-flex align-items-stretch">
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header text-center">
+            <h4 class="my-0">{{ blog.title }}</h4>
+        </div>
+        <div class="card-body d-flex flex-column align-items-center">
+            <div class="card-body text-center">
+                <img src="{{ blog.preview_image.url }}" alt="{{ blog.title }}" class="img-fluid"
+                     style="max-width: 70%;">
+                <ul class="list-unstyled mt-3 mb-4 text-start flex-grow-1">
+                    <li>{{ blog.content|truncatewords:20 }}</li>
+                </ul>
+            </div>
+            <a class="btn btn-primary" href="{% url 'blogs:blog_detail' blog.pk %}">Подробнее</a>
+        <a class="btn btn-secondary mt-2" href="{% url 'blogs:blog_update' blog.pk %}">Редактировать</a>
+        <a class="btn btn-danger mt-2" href="{% url 'blogs:blog_delete' blog.pk %}">Удалить</a>
+        </div>
+
+    </div>
+</div>
