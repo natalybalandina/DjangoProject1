@@ -9,9 +9,29 @@
                     <h2 class="text-center">Редактировать товар</h2>
                 </div>
                 <div class="card-body">
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <ul>
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
                         <div class="d-flex justify-content-between mt-4">
                             <button type="submit" class="btn btn-success">Сохранить</button>
                             <a href="{% url 'catalog:home' %}" class="btn btn-secondary">Отмена</a>

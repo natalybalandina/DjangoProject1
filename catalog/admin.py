@@ -1,6 +1,7 @@
 from django.contrib import admin
 from catalog.models import Category, Product, Contact
-
+from django.core.exceptions import ValidationError
+from .forms import ProductForm
 
 def format_datetime(value):
     if value is not None:
@@ -10,18 +11,10 @@ def format_datetime(value):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "price", "formatted_created_at", "formatted_updated_at", "category")
-    list_filter = ("category",)
+    form = ProductForm
+    list_display = ("id", "name", "price", "category", "is_active")
+    list_filter = ("category","is_active")
     search_fields = ("name", "description")
-
-    def formatted_created_at(self, obj):
-        return format_datetime(obj.created_at)
-
-    def formatted_updated_at(self, obj):
-        return format_datetime(obj.updated_at)
-
-    formatted_created_at.short_description = 'Created At'
-    formatted_updated_at.short_description = 'Updated At'
 
 
 @admin.register(Category)
