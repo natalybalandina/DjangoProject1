@@ -14,13 +14,6 @@ class RegisterView(CreateView):
     template_name = "users/register.html"
     success_url = reverse_lazy("catalog:home")
 
-    # Переопределяем метод form_valid для отправки письма после регистрации
-    # def form_valid(self, form):
-    #     user = form.save()
-    #     login(self.request, user)
-    #     self.send_welcome_email(user.email)
-    #     return super().form_valid(form)
-
 
     def form_valid(self, form):
         user = form.save(commit=False)
