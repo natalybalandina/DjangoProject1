@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="text-center">Редактирование профиля</h4>
+                </div>
+                <div class="card-body">
+                    {% if user.avatar %}
+                    <div class="text-center mb-3">
+                        <img src="{{ user.avatar.url }}" alt="Аватар" class="img-thumbnail" style="max-width: 200px;">
+                    </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                            <a href="{% url 'catalog:home' %}" class="btn btn-secondary">На главную</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
