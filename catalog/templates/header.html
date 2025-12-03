@@ -6,7 +6,17 @@
         <a class="p-2 btn btn-outline-primary" href="{% url 'catalog:add_product' %}">Добавить товар</a>
     </nav>
     <nav class="ms-auto">
-        <a class="p-2 btn btn-outline-primary" href="#">Вход</a>
-        <a class="p-2 btn btn-outline-primary" href="#">Регистрация</a>
+        {% if user.is_authenticated %}
+            <span class="navbar-text me-2">Привет, {{ user.email }}</span>
+            <a class="p-2 btn btn-outline-primary" href="{% url 'users:profile' %}">Профиль</a>
+            <form method="post" action="{% url 'users:logout' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="p-2 btn btn-outline-primary">Выйти</button>
+            </form>
+        {% else %}
+            <a class="p-2 btn btn-outline-primary" href="{% url 'users:login' %}">Вход</a>
+            <a class="p-2 btn btn-outline-primary" href="{% url 'users:register' %}">Регистрация</a>
+            <a class="p-2 btn btn-link" href="{% url 'users:password_reset' %}">Забыли пароль?</a>
+        {% endif %}
     </nav>
 </div>

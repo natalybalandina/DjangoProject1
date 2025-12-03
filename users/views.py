@@ -5,6 +5,9 @@ from django.core.mail import send_mail
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, TemplateView
 
+from django.template import TemplateDoesNotExist
+from django.http import HttpResponse
+
 from config import settings
 from users.forms import UserRegisterForm, UserProfileForm
 from users.models import User
@@ -61,3 +64,13 @@ class PasswordResetTestView(TemplateView):
         context['uid'] = urlsafe_base64_encode(force_bytes(user.pk))
         context['token'] = default_token_generator.make_token(user)
         return context
+
+# Тестирование наличия шаблона
+#def check_template(request):
+#    try:
+#        from django.template.loader import get_template
+#       get_template("users/register.html")
+#        return HttpResponse("Шаблон найден!")
+#    except TemplateDoesNotExist:
+#        return HttpResponse("Шаблон не найден.")
+

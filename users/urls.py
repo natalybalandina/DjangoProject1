@@ -1,6 +1,6 @@
 from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
-from .views import RegisterView, ProfileView, UserLoginView
+from .views import RegisterView, ProfileView, UserLoginView #, check_template
 from django.conf import settings
 from django.views.generic import TemplateView
 
@@ -11,6 +11,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='catalog:home'), name='logout'),
     path('register/', RegisterView.as_view(), name='register'),
     path('profile/', ProfileView.as_view(), name='profile'),
+  # path('check-template/', check_template, name='check_template'),
 
     # Password reset
     path('password_reset/',
