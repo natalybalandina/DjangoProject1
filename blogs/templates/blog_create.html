@@ -1,0 +1,32 @@
+{% extends 'blogs/base.html' %}
+{% load my_tags %}
+{% block content %}
+<h1>Добавление поста</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.title }}<br>
+    {{ form.content }}<br>
+    {{ form.preview_image }}<br>
+    <span>Опубликовать пост? </span>
+    {{ form.publication_sign }}<br>
+    <button type="submit" class="btn btn-primary mt-3">
+        {% if object %}
+            Сохранить
+        {% else %}
+            Создать
+        {% endif %}
+    </button>
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <ul>
+            {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <li>{{ field }}: {{ error }}</li>
+            {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    <span class="text-danger mt-3">{{ error }}</span>
+</form>
+{% endblock %}

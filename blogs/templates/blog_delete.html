@@ -1,0 +1,29 @@
+{% extends 'blogs/base.html' %}
+{% load my_tags %}
+{% block content %}
+<h1>Удаление поста</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="card-header">
+        <p class="card-text">Действительно хотите удалить пост: </p>
+        <p class="card-text">{{ object.title }}</p>
+    </div>
+    <div class="card-body">
+        <button type="submit" class="btn btn-danger mt-3">Удалить</button>
+        <a class="btn btn-primary mt-3" href="{% url 'blogs:blog_list' %}">Назад</a>
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <ul>
+            {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <li>{{ field }}: {{ error }}</li>
+            {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    <span class="text-danger mt-3">{{ error }}</span>
+</form>
+{% endblock %}
