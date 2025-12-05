@@ -6,6 +6,12 @@ class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True, verbose_name="Email")
 
+    is_verified = models.BooleanField(
+        default=False,
+        verbose_name="Подтверждён",
+        help_text="Отметьте, если пользователь подтвердил email"
+    )
+
     avatar = models.ImageField(
         upload_to="users/avatars",
         verbose_name="Аватар",

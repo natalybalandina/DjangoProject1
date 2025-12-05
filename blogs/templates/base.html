@@ -9,6 +9,9 @@
 </head>
 <body>
 {% include 'blogs/header.html' %}
+
+{% include 'includes/main_menu.html' %}  <!-- Добавляем include -->
+
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>

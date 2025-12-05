@@ -15,11 +15,34 @@
     </form>
 </div>
 
+<!-- Контейнер для к странице блогов -->
+<!--<div class="container">-->
+<!--    <div class="row justify-content-center text-center">-->
+<!--        <div class="col-12">-->
+<!--            <a href="{% url 'blogs:blog_list' %}" class="btn btn-primary">Перейти к блогам</a>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!-- Контейнер блогов -->
+<div class="container">
+    <h2>Последние записи в блоге</h2>
+    <div class="row">
+        {% for blog in latest_blogs %}
+            <div class="col-md-4">
+                <h3>{{ blog.title }}</h3>
+                <p>{{ blog.content|truncatechars:100 }}</p>
+                <a href="{% url 'blogs:blog_detail' blog.pk %}">Подробнее</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
 <!-- Контейнер для карточек товаров -->
 <div class="container">
     <div class="row justify-content-center text-center">
         {% for product in products_list %}
-            {% include 'product_card.html' %}
+            {% include 'catalog/product_card.html' %}
         {% empty %}
             <div class="col-12">
                 <p>Продукты не найдены.</p>

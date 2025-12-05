@@ -1,5 +1,6 @@
 from django.db import models
 from django import forms
+from users.models import User
 
 
 class Category(models.Model):
@@ -22,10 +23,28 @@ class Category(models.Model):
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
 
+PUBLISH_STATUS = [
+    ('draft', 'Черновик'),
+    ('published', 'Опубликовано'),
+    ('archived', 'В архиве'),
+]
 
 class Product(models.Model):
+    status = models.CharField(
+        max_length=20,
+        choices=PUBLISH_STATUS,
+        default='draft',
+        verbose_name="Статус публикации"
+    )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        verbose_name="Владелец продукта",
+        blank=True,
+        null=True,
+    )
     name = models.CharField(
-        max_length=255,
+        max_length=100,
         verbose_name="Название продукта",
         help_text="Введите название продукта",
     )
@@ -34,6 +53,12 @@ class Product(models.Model):
         help_text="Введите описание продукта",
         blank=True,
         null=True,
+    )
+    publication_status = models.CharField(
+        max_length=20,
+        choices=PUBLISH_STATUS,
+        default='draft',
+        verbose_name="Статус публикации"
     )
     image = models.ImageField(
         upload_to="catalog/photo",
@@ -56,8 +81,14 @@ class Product(models.Model):
 
     is_active = models.BooleanField(
         default=True,
-        verbose_name="Активный товар",
-        help_text="Отображать товар каталоге"
+        verbose_name="Активен",
+        help_text="Активен ли товар в каталоге"
+    )
+
+    is_published = models.BooleanField(
+        default=True,
+        verbose_name="Опубликовано",
+        help_text="Публиковать товар в каталоге"
     )
 
     def __str__(self):
@@ -66,6 +97,11 @@ class Product(models.Model):
     class Meta:
         verbose_name = "Продукт"
         verbose_name_plural = "Продукты"
+        permissions = [
+            ("can_unpublish_product", "Can unpublish product"),
+            ("can_change_product_status", "Can change product status"),
+            ('can_delete_product', 'Can delete product'),
+        ]
 
 
 class ContactInfo(models.Model):
