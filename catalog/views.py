@@ -1,4 +1,7 @@
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, PermissionRequiredMixin
@@ -11,6 +14,8 @@ from django.contrib import messages
 from blogs.models import BlogPost
 from catalog.models import Product, Contact, Category
 from catalog.forms import ProductForm
+from catalog.services import get_products_by_category
+
 
 class HomeView(ListView):
     model = Product
@@ -19,30 +24,34 @@ class HomeView(ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        queryset = Product.objects.filter(publication_status='published')
+        cache_key = f"product_list_queryset:page_{self.request.GET.get('page', 1)}:search_{self.request.GET.get('q', '')}"
         search_query = self.request.GET.get('q', '')
-        queryset = Product.objects.all()  # Получаем все продукты
 
-        if search_query:
-            queryset = queryset.filter(
-                Q(name__icontains=search_query) |
-                Q(description__icontains=search_query) |
-                Q(category__name__icontains=search_query)
-            )
+        queryset = cache.get(cache_key)
 
-        return queryset.order_by('id')
+        if queryset is None:
+            queryset = Product.objects.filter(publication_status='published')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['latest_blogs'] = BlogPost.objects.filter(publication_sign=True).order_by('-created_at')[
-                                  :3]  # Получаем последние 3 опубликованные записи
-        return context
+            if search_query:
+                queryset = queryset.filter(
+                    Q(name__icontains=search_query) |
+                    Q(description__icontains=search_query) |
+                    Q(category__name__icontains=search_query)
+                )
+
+            queryset = queryset.order_by('id')
+            cache.set(cache_key, queryset, 300)
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search_query'] = self.request.GET.get('q', '')
         context['categories'] = Category.objects.all()
-        context['can_delete_product'] = 'catalog.can_delete_product'  # Добавляем переменную в контекст
+        context['can_delete_product'] = 'catalog.can_delete_product'
+        context['latest_blogs'] = BlogPost.objects.filter(
+            publication_sign=True
+        ).order_by('-created_at')[:3]
         return context
 
 
@@ -50,6 +59,10 @@ class ProductDetailView(DetailView):
     model = Product
     template_name = 'catalog/product_info.html'
     context_object_name = 'product'
+
+    @method_decorator(cache_page(60 * 15))  # Кеширование на 15 минут
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 class ContactsView(TemplateView):
     template_name = 'catalog/contacts.html'
@@ -156,10 +169,13 @@ class CategoryView(ListView):
     paginate_by = 6
     context_object_name = 'products'
 
+    # def get_queryset(self):
+    #     category_id = self.kwargs.get('category_id')
+    #     self.category = Category.objects.get(id=category_id)
+    #     return Product.objects.filter(category=self.category).order_by('id')
     def get_queryset(self):
         category_id = self.kwargs.get('category_id')
-        self.category = Category.objects.get(id=category_id)
-        return Product.objects.filter(category=self.category).order_by('id')
+        return get_products_by_category(category_id)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -172,27 +188,6 @@ class CategoryView(ListView):
         except Category.DoesNotExist:
             return render(request, 'catalog/catalog/category_not_found.html', {'category_id': kwargs['category_id']})
 
-
-# class UnpublishProductView(PermissionRequiredMixin, View):
-#     permission_required = 'catalog.can_unpublish_product'
-#
-#     def post(self, request, pk):
-#         product = get_object_or_404(Product, pk=pk)
-#         product.is_published = False
-#         product.save()
-#         messages.success(request, f"Товар '{product.name}' снят с публикации")
-#         return redirect('catalog:product_info', pk=product.pk)
-#
-#
-# class PublishProductView(PermissionRequiredMixin, View):
-#     permission_required = 'catalog.can_unpublish_product'
-#
-#     def post(self, request, pk):
-#         product = get_object_or_404(Product, pk=pk)
-#         product.is_published = True
-#         product.save()
-#         messages.success(request, f"Товар '{product.name}' опубликован")
-#         return redirect('catalog:product_info', pk=product.pk)
 
 class UnpublishProductView(PermissionRequiredMixin, TemplateView):
     permission_required = 'catalog.can_unpublish_product'

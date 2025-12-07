@@ -14,6 +14,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # Настройки отладки
 DEBUG = True if os.getenv('DEBUG') == "True" else False
 
+CACHE_ENABLED = os.getenv('CACHE_ENABLED', 'False') == 'True'
+
 # Разрешенные хосты
 ALLOWED_HOSTS = ["*"]
 
@@ -108,8 +110,9 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
 
+#STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -129,3 +132,13 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5MB
 ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png']
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
