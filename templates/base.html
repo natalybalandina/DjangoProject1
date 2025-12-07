@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Skystore</title>
+    <!-- Подключите статичеcкие файлы со стилями Bootstrap -->
+    {% load static %}
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+</head>
+<body>
+{% include 'includes/header.html' %}
+
+{% include 'includes/main_menu.html' %}  <!-- Добавляем include -->
+
+<div class="container">
+{% block content %}
+{% endblock %}
+
+{% include 'includes/footer.html' %}
+
+</div>
+<!-- Подключите статичеcкие файлы со скриптами Bootstrap -->
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+</body>
+</html>
